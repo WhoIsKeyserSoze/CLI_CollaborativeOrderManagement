@@ -1,6 +1,6 @@
 # CLI_CollaborativeOrderManagement
 
-This app is made to make online groceries order easier for families. 1 person is in charge of the order (order manager) and the other can add articles to the order. 
+This app is made to make online groceries orders easier for families. 1 person is in charge of the order (order manager) and others can add articles to the order. 
 
 The app is composed of 3 files :
  - app.sql creates and initialize Order and Catalogue tables.
