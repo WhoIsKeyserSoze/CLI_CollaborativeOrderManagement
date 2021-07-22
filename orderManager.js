@@ -13,11 +13,11 @@ var connection = mysql.createConnection({
 connection.connect(function (error) {
     if (error) throw error;
     console.log("Connected as ID:", connection.threadId + "\n");
-    Menu();
+    menu();
 });
 
 
-function Menu() {
+function menu() {
     console.log((chalk.red("Welcome to Order Management Interface!")))
     inquirer.prompt({
         type: "list",
@@ -67,10 +67,10 @@ function orderManagement() {
         message: "What would you like to do?",
         name: "choice",
         choices: ["Modify order", "Exit"]
-    }).then(function (response) {
+    }).then(async function (response) {
         switch (response.choice) {
             case "Modify order":
-                modifyOrder();
+                await modifyOrder();
                 break;
             case "Exit":
                 connection.end();
@@ -80,7 +80,7 @@ function orderManagement() {
     })
 }
 
-function modifyOrder(){
+async function modifyOrder(){
     inquirer.prompt([{
         type: "input",
         message: "Please enter the ID of the product you would like to modify.",
@@ -111,11 +111,19 @@ function modifyOrder(){
     }])
     .then(function (answer) {
       connection.query("SELECT * FROM products WHERE ?", {
-          item_id: answer.itemId
+          itemId: answer.item_id
       }, function (error, response) {
           if(answer.action == 1){
               console.log("\nYou have chosen to delete item : " + answer.item_id);
               console.log("Processing ...");
+              var update = "DELETE FROM products WHERE item_id = " + answer.item_id;
+              connection.query(update, function (error, response) {
+                  if (error) throw error;
+                  console.log("-------------------------------")
+                  console.log("Item successfully deleted !")
+                  console.log("-------------------------------")
+                  setTimeout(orderItems, 1000);
+              })
           }
           else if (answer.action == 2){
               console.log("\nYou have chosen to change quantity on item : " + answer.item_id);
@@ -131,10 +139,13 @@ function modifyOrder(){
                       return false;
                   }
               }]).then(function (ans){
-                  var update = "UPDATE products SET quantity = " + ans.newQ + "WHERE item_id = " + answer.item_id;
+                  var update = "UPDATE products SET quantity = " + ans.newQ + " WHERE item_id = " + answer.item_id;
                   connection.query(update, function (error, response) {
                       if (error) throw error;
+                      console.log("-------------------------------")
                       console.log("Quantity successfully changed !")
+                      console.log("-------------------------------")
+                      setTimeout(orderItems, 1000);
                   })
               })
 
