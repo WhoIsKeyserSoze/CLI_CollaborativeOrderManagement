@@ -70,7 +70,7 @@ function orderManagement() {
     }).then(function (response) {
         switch (response.choice) {
             case "Modify order":
-                // modifyOrder();
+                modifyOrder();
                 break;
             case "Exit":
                 connection.end();
@@ -94,7 +94,7 @@ function modifyOrder(){
     },
     {
         type: "input",
-        message: "Press D for deleting product, Q to change quantity",
+        message: "Press 1 for deleting product, 2 to change quantity",
         name: "action",
         validate: function (value) {
             if (isNaN(value) === false) {
@@ -102,9 +102,44 @@ function modifyOrder(){
             }
             return false;
         }
-    }]).then(function (userResponse) {
+    },
+    {
+        type: "confirm",
+        message: (chalk.green("Is this correct?")),
+        name: "confirmation",
+        default: true
+    }])
+    .then(function (answer) {
       connection.query("SELECT * FROM products WHERE ?", {
-          item_id: userResponse.itemId
-      }
-    })
+          item_id: answer.itemId
+      }, function (error, response) {
+          if(answer.action == 1){
+              console.log("\nYou have chosen to delete item : " + answer.item_id);
+              console.log("Processing ...");
+          }
+          else if (answer.action == 2){
+              console.log("\nYou have chosen to change quantity on item : " + answer.item_id);
+              console.log("Processing ...");
+              inquirer.prompt([{
+                  type: "input",
+                  message: "Enter new quantity",
+                  name: "newQ",
+                  validate: function (value) {
+                      if (isNaN(value) === false) {
+                          return true;
+                      }
+                      return false;
+                  }
+              }]).then(function (ans){
+                  var update = "UPDATE products SET quantity = " + ans.newQ + "WHERE item_id = " + answer.item_id;
+                  connection.query(update, function (error, response) {
+                      if (error) throw error;
+                      console.log("Quantity successfully changed !")
+                  })
+              })
+
+          }
+
+        })
+    });
 }
